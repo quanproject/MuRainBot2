@@ -54,7 +54,7 @@ class EventData(TypedDict):
     """
     事件数据
     """
-    cls: Event
+    cls: type[Event]
     post_type: str
     rules: dict
 
@@ -1113,6 +1113,8 @@ def on_escalation(event_data):
         None
     """
     event_data = event_data.event_data
+    # 将事件中上游携带的发送者/群信息注入数据缓存, 减少后续主动调用 API 获取
+    QQDataCacher.update_from_event(event_data)
     event = Event(event_data)
     event_call_list = [event]
     matched_event = False

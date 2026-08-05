@@ -12,6 +12,8 @@ class QQDataItem:
     def refresh_cache(self):
         self.last_update = None
 
+    def update(self, **kwargs) -> None: ...
+
 class UserData(QQDataItem):
     def __init__(
             self,
@@ -20,7 +22,8 @@ class UserData(QQDataItem):
             sex: str = NotFetched,
             age: int = NotFetched,
             is_friend: bool = NotFetched,
-            remark: str | None = NotFetched  # 此值仅在是好友的时候会存在
+            remark: str | None = NotFetched,  # 此值仅在是好友的时候会存在
+            **kwargs  # 其他字段（实现端特有字段等），将一并缓存，可通过属性访问
     ) -> None:
         self._data = None
         self._user_id = None
@@ -69,6 +72,7 @@ class GroupMemberData(QQDataItem):
             title: str = NotFetched,
             title_expire_time: int = NotFetched,
             card_changeable: bool = NotFetched,
+            **kwargs  # 其他字段（如实现端的 shut_up_end_time 等），将一并缓存，可通过属性访问
     ):
         self._data = None
         self._user_id = None
@@ -132,7 +136,8 @@ class GroupData(QQDataItem):
             group_id: int,
             group_name: str = NotFetched,
             member_count: int = NotFetched,
-            max_member_count: int = NotFetched
+            max_member_count: int = NotFetched,
+            **kwargs  # 其他字段（如实现端的 remark/description 等），将一并缓存，可通过属性访问
     ) -> None:
         super().__init__()
         self._group_id = None
@@ -165,12 +170,16 @@ group_member_info: dict =  None
 user_info: dict =  None
 max_cache_size: int =  None
 expire_time: int =  None
+GROUP_INFO_FIELDS: tuple[str, ...] = ...
+USER_INFO_FIELDS: tuple[str, ...] = ...
 
 def get_group_info(group_id: int, *args, **kwargs) -> GroupData: ...
 
 def get_group_member_info(group_id: int, user_id: int, *args, **kwargs) -> GroupMemberData: ...
 
 def get_user_info(user_id: int, *args, **kwargs) -> UserData: ...
+
+def update_from_event(event_data: dict) -> None: ...
 
 def garbage_collection() -> int: ...
 
